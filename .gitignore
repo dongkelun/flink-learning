@@ -1,0 +1,9 @@
+*/target/
+/build/
+/.settings/
+.classpath
+.project
+/bin/
+*.json
+*.iml
+.idea/
