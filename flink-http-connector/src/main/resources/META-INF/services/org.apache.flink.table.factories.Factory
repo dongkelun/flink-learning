@@ -1,1 +1,1 @@
-com.dkl.flink.connector.http.HttpDynamicTableFactory
+com.dkl.flink.connector.http.HttpTableFactory

@@ -1,4 +1,4 @@
-package com.dkl.flink.connector.http;
+package com.dkl.flink.utils;
 
 public class StringUtils {
     public static boolean isNullOrEmpty(String str) {

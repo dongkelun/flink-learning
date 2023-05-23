@@ -17,15 +17,18 @@ public class HttpSourceFunction extends RichSourceFunction<RowData> {
     private volatile boolean isRunning = true;
     private String url;
     private String mode;
-    private long requestInterval;
+    private boolean isStreaming;
+    private long interval;
     private DeserializationSchema<RowData> deserializer;
     // count out event
     private transient Counter counter;
 
-    public HttpSourceFunction(String url, String mode, long requestInterval, DeserializationSchema<RowData> deserializer) {
+    public HttpSourceFunction(String url, String mode, boolean isStreaming,
+                              long interval, DeserializationSchema<RowData> deserializer) {
         this.url = url;
         this.mode = mode;
-        this.requestInterval = requestInterval;
+        this.isStreaming = isStreaming;
+        this.interval = interval;
         this.deserializer = deserializer;
     }
 
@@ -40,19 +43,34 @@ public class HttpSourceFunction extends RichSourceFunction<RowData> {
 
     @Override
     public void run(SourceContext<RowData> ctx) {
-//        while (isRunning) {
+        if (isStreaming) {
+            while (isRunning) {
+                try {
+                    // 接收http消息
+                    // receive http message
+                    String message = mode.equalsIgnoreCase("get") ? HttpClientUtil.get(url) : HttpClientUtil.post(url, "");
+                    // 解码并处理记录
+                    // deserializer message
+                    ctx.collect(deserializer.deserialize(message.getBytes()));
+                    this.counter.inc();
+
+                    TimeUnit.SECONDS.sleep(interval);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        } else {
             try {
                 // receive http message
                 String message = mode.equalsIgnoreCase("get") ? HttpClientUtil.get(url) : HttpClientUtil.post(url, "");
                 // deserializer message
                 ctx.collect(deserializer.deserialize(message.getBytes()));
                 this.counter.inc();
-
-//                TimeUnit.SECONDS.sleep(requestInterval);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-//        }
+        }
+
 
     }
 

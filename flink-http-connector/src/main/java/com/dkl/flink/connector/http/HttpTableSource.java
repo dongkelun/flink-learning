@@ -10,22 +10,25 @@ import org.apache.flink.table.connector.source.SourceFunctionProvider;
 import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.types.DataType;
 
-public class HttpDynamicTableSource implements ScanTableSource {
+public class HttpTableSource implements ScanTableSource {
 
     private final String url;
     private final String mode;
+    private final boolean isStreaming;
     private final long interval;
     private final DecodingFormat<DeserializationSchema<RowData>> decodingFormat;
     private final DataType producedDataType;
 
-    public HttpDynamicTableSource(
+    public HttpTableSource(
             String hostname,
             String mode,
+            boolean isStreaming,
             long interval,
             DecodingFormat<DeserializationSchema<RowData>> decodingFormat,
             DataType producedDataType) {
         this.url = hostname;
         this.mode = mode;
+        this.isStreaming = isStreaming;
         this.interval = interval;
         this.decodingFormat = decodingFormat;
         this.producedDataType = producedDataType;
@@ -33,6 +36,8 @@ public class HttpDynamicTableSource implements ScanTableSource {
 
     @Override
     public ChangelogMode getChangelogMode() {
+        // 在我们的例子中，由解码器来决定 changelog 支持的模式
+        // 但是在 source 端指定也可以
         // in our example the format decides about the changelog mode
         // but it could also be the source itself
         return decodingFormat.getChangelogMode();
@@ -41,19 +46,20 @@ public class HttpDynamicTableSource implements ScanTableSource {
     @Override
     public ScanRuntimeProvider getScanRuntimeProvider(ScanContext runtimeProviderContext) {
 
+        // 创建运行时类用于提交给集群
         // create runtime classes that are shipped to the cluster
         final DeserializationSchema<RowData> deserializer = decodingFormat.createRuntimeDecoder(
                 runtimeProviderContext,
                 producedDataType);
 
-        final SourceFunction<RowData> sourceFunction = new HttpSourceFunction(url, mode, interval, deserializer);
+        final SourceFunction<RowData> sourceFunction = new HttpSourceFunction(url, mode, isStreaming, interval, deserializer);
 
-        return SourceFunctionProvider.of(sourceFunction, true);
+        return SourceFunctionProvider.of(sourceFunction, !isStreaming);
     }
 
     @Override
     public DynamicTableSource copy() {
-        return new HttpDynamicTableSource(url, mode, interval, decodingFormat, producedDataType);
+        return new HttpTableSource(url, mode, isStreaming, interval, decodingFormat, producedDataType);
     }
 
     @Override
