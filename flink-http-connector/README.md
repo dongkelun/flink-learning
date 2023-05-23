@@ -26,4 +26,5 @@ create table cust_http_post_source(
 ```
 
 ## Flink自定义Source官方文档
-[dynamic-table-source](https://nightlies.apache.org/flink/flink-docs-release-1.15/zh/docs/dev/table/sourcessinks/#dynamic-table-source)
+[Flink 1.15 英文](https://nightlies.apache.org/flink/flink-docs-release-1.15/zh/docs/dev/table/sourcessinks)
+[Flink 1.17 中文](https://nightlies.apache.org/flink/flink-docs-release-1.17/zh/docs/dev/table/sourcessinks)
