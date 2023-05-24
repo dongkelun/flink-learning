@@ -33,10 +33,11 @@ public class HttpClientUtil {
             throw new RuntimeException(String.format("调用接口%s失败：%s", uri, respContent));
         }
     }
+
     public static String get(String uri) throws Exception {
-        HttpGet httpPost = new HttpGet(uri);
+        HttpGet httpGet = new HttpGet(uri);
         CloseableHttpClient client = HttpClients.createDefault();
-        HttpResponse resp = client.execute(httpPost);
+        HttpResponse resp = client.execute(httpGet);
         String respContent = EntityUtils.toString(resp.getEntity(), "UTF-8");
         if (resp.getStatusLine().getStatusCode() == 200) {
             return respContent;
@@ -103,8 +104,9 @@ public class HttpClientUtil {
         }
         return result;
     }
+
     public static void main(String[] args) throws Exception {
-        System.out.println(HttpClientUtil.post("http://mock.apifox.cn/m1/2518376-0-default/test/flink/post/order",""));
+        System.out.println(HttpClientUtil.post("http://mock.apifox.cn/m1/2518376-0-default/test/flink/post/order", ""));
         System.out.println(HttpClientUtil.get("http://mock.apifox.cn/m1/2518376-0-default/test/flink/get/order"));
     }
 }
